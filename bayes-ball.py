@@ -52,6 +52,10 @@ def get_parents(graph, node):
         parents(list): the list of parents for a given node
     """
     parents = []
+
+    for parent in graph:
+        if node in graph[parent]:
+            parents.append(parent)
     return parents
 
 def mark_v_struct(graph, Z):
@@ -88,24 +92,25 @@ def traverse_trails(graph, X, Y, Z):
         Z (list): list of nodes in set Z
 
     Returns:
+        ans (bool): boolean answer corresponding to either finding blockage? or not
 
     """
     q = queue.Queue()
     visited = {}
 
     for x in X:
-        q.put(x) #this might be optimized as there might be node that will be visited multiple times
+        q.put(x)
     while not q.empty():
         node = q.get()
         visited[node] = True
         if node in Y:
             return False
-        if node not in Z:
+        if node not in Z: #is this the case?
             for descendant in graph[node]:
                 if not visited[descendant]:
                     q.put(descendant)
-    else:
-        return True
+    #Should we do the above also for Y
+    return True
 
 def is_independent(graph, X, Y, Z):
     """Checks if X is conditionally independent
@@ -123,12 +128,11 @@ def is_independent(graph, X, Y, Z):
     """
     #Phase 1
     out = mark_v_struct(graph, Z)
+    #Need to check whether this is correct
     for x in X:
-        if x in out:
-            return False
-    for y in Y:
-        if y in out:
-            return False
+        for y in Y:
+            if (x in out) and (y in out):
+                return False
     #Phase 2
     ans = traverse_trails(graph, X, Y, out)
 
@@ -137,6 +141,7 @@ def is_independent(graph, X, Y, Z):
 
 if __name__ == '__main__':
     graph = create_graph()
+    print(graph)
     Qs = read_queries()
     for X, Y, Z in Qs:
         output = 1 if is_independent(graph, X, Y, Z) else 0
