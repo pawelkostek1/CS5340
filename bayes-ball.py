@@ -14,7 +14,7 @@ def create_graph():
     Returns:
         dict: the graph as a dictionary
     """
-    with open('graph.txt', 'r') as g_file:
+    with open('graph2.txt', 'r') as g_file:
         K = int(g_file.readline())
         graph = {i: [] for i in range(1, K + 1)}
         for line in g_file:
@@ -30,7 +30,7 @@ def read_queries():
     Returns:
         list: the list of queries
     """
-    with open('queries.txt', 'r') as q_file:
+    with open('queries2.txt', 'r') as q_file:
         queries = []
         for line in q_file:
             X, Y, Z = [], [], []
@@ -71,7 +71,7 @@ def mark_v_struct(graph, Z):
     Returns:
         A (list): list of nodes that are in Z or have descendants in Z
     """
-    L = Z
+    L = Z.copy()
     A = []
 
     while len(L):
@@ -100,6 +100,8 @@ def traverse_trails(graph, X, Y, Z, out):
     """
     q = queue.Queue()
     visited = {}
+    for node in graph:
+        visited[node] = False
 
     for x in X:
         q.put(x)
@@ -107,8 +109,11 @@ def traverse_trails(graph, X, Y, Z, out):
         node = q.get()
         visited[node] = True
         if node in Y:
+            print("This node is in Y: " + str(node))
             return False
         if node not in Z: #is this the case?
+            print(node)
+            print(Z)
             for descendant in graph[node]:
                 if not visited[descendant]:
                     q.put(descendant)
@@ -130,24 +135,34 @@ def is_independent(graph, X, Y, Z):
     of Y given Z, False otherwise.
     """
     #Phase 1
+
     out = mark_v_struct(graph, Z) # Should the v structure be done separately for every z in Z
     #Need to check whether this is correct
-    for x in X:
-        for y in Y:
-            if (x in out) and (y in out):
-                return False
+    #for x in X:
+    #    for y in Y:
+    #        if (x in out) and (y in out):
+    #            return False
     #Phase 2
-    ans = traverse_trails(graph, X, Y, out)
+    print(X)
+    print(Y)
+    print(Z)
+    ans = traverse_trails(graph, X, Y, Z, out)
 
     return ans
 
 
 if __name__ == '__main__':
     graph = create_graph()
+    print("Graph:")
     print(graph)
-    out = mark_v_struct(graph, [4,3])
-    print(out)
+
     Qs = read_queries()
+    i = 1
     for X, Y, Z in Qs:
+        print("Query " + str(i) + ": Is " + str(X) + " independent of " + str(Y) + " given " + str(Z) + "?")
         output = 1 if is_independent(graph, X, Y, Z) else 0
-        print(output)
+        if output:
+            print("Yes")
+        else:
+            print("No")
+        i += 1
