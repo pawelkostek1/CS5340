@@ -71,15 +71,18 @@ def mark_v_struct(graph, Z):
     Returns:
         A (list): list of nodes that are in Z or have descendants in Z
     """
-    L = Z.copy()
     A = []
-
-    while len(L):
-        C = L.pop()
-        if C not in A:
-            for parent in get_parents(graph, C):
-                L.append(parent)
-            A.append(C)
+    for z in Z:
+        l = [z]
+        a = []
+        while len(l):
+            C = l.pop()
+            if C not in A:
+                for parent in get_parents(graph, C):
+                    if parent not in Z:
+                        l.append(parent)
+                a.append(C)
+        A.append(a)
     return A
 
 def traverse_trails(graph, X, Y, Z, out):
@@ -138,10 +141,11 @@ def is_independent(graph, X, Y, Z):
 
     out = mark_v_struct(graph, Z) # Should the v structure be done separately for every z in Z
     #Need to check whether this is correct
-    #for x in X:
-    #    for y in Y:
-    #        if (x in out) and (y in out):
-    #            return False
+    for v_struct in out:
+        for y in Y:
+            for x in X:
+                if (x in v_struct) and (y in v_struct):
+                    return False
     #Phase 2
     print(X)
     print(Y)
