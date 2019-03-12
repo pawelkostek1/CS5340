@@ -4,6 +4,7 @@ Name: Pawel Kostkowski, Nirav Gandhi
 Matric No.: A0196329R, A********
 '''
 
+import queue
 
 def create_graph():
     """Reads graph.txt and returns a dictionary
@@ -68,19 +69,20 @@ def mark_v_struct(graph, Z):
         Z (list): list of nodes in set Z
 
     Returns:
-        A (list): list of nodes that are in Z of have descendants in Z
+        A (list): list of nodes that are in Z or have descendants in Z
     """
     L = Z
     A = []
-    while len(L) != 0:
+
+    while len(L):
         C = L.pop()
         if C not in A:
             for parent in get_parents(graph, C):
-                L = L.push(parent)
-        A = A.push(C)
+                L.append(parent)
+            A.append(C)
     return A
 
-def traverse_trails(graph, X, Y, Z):
+def traverse_trails(graph, X, Y, Z, out):
     """Helper function that traverse all the trails
     in the graph looking for a blocked node.
     Implemented as BFS algorithm
@@ -90,6 +92,7 @@ def traverse_trails(graph, X, Y, Z):
         X (list): list of nodes in set X
         Y (list): list of nodes in set Y
         Z (list): list of nodes in set Z
+        out (list): list of nodes that are in Z or have descendants in Z
 
     Returns:
         ans (bool): boolean answer corresponding to either finding blockage? or not
@@ -127,7 +130,7 @@ def is_independent(graph, X, Y, Z):
     of Y given Z, False otherwise.
     """
     #Phase 1
-    out = mark_v_struct(graph, Z)
+    out = mark_v_struct(graph, Z) # Should the v structure be done separately for every z in Z
     #Need to check whether this is correct
     for x in X:
         for y in Y:
@@ -142,6 +145,8 @@ def is_independent(graph, X, Y, Z):
 if __name__ == '__main__':
     graph = create_graph()
     print(graph)
+    out = mark_v_struct(graph, [4,3])
+    print(out)
     Qs = read_queries()
     for X, Y, Z in Qs:
         output = 1 if is_independent(graph, X, Y, Z) else 0
