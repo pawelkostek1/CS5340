@@ -1,10 +1,11 @@
 '''
 Description: CS5340 - The Bayes-Ball algorithm
 Name: Pawel Kostkowski, Nirav Gandhi
-Matric No.: A0196329R, A********
+Matric No.: A0196329R, A0088471W
 '''
 
 import queue
+import copy
 
 def create_graph():
     """Reads graph.txt and returns a dictionary
@@ -14,7 +15,7 @@ def create_graph():
     Returns:
         dict: the graph as a dictionary
     """
-    with open('graph2.txt', 'r') as g_file:
+    with open('graph.txt', 'r') as g_file:
         K = int(g_file.readline())
         graph = {i: [] for i in range(1, K + 1)}
         for line in g_file:
@@ -30,7 +31,7 @@ def read_queries():
     Returns:
         list: the list of queries
     """
-    with open('queries2.txt', 'r') as q_file:
+    with open('queries.txt', 'r') as q_file:
         queries = []
         for line in q_file:
             X, Y, Z = [], [], []
@@ -59,7 +60,7 @@ def get_parents(graph, node):
             parents.append(parent)
     return parents
 
-def mark_v_struct(graph, Z):
+def  mark_v_struct(graph, Z):
     """Helper function that traverse the graph
     from leaves to the roots, marking all nodes
     that are in Z or have descendants in Z.
@@ -101,6 +102,7 @@ def traverse_trails(graph, X, Y, Z, out):
         ans (bool): boolean answer corresponding to either finding blockage? or not
 
     """
+
     q = queue.Queue()
     visited = {}
     for node in graph:
@@ -115,12 +117,31 @@ def traverse_trails(graph, X, Y, Z, out):
             print("This node is in Y: " + str(node))
             return False
         if node not in Z: #is this the case?
-            print(node)
-            print(Z)
+            #print(node)
+            #print(Z)
             for descendant in graph[node]:
                 if not visited[descendant]:
                     q.put(descendant)
-    #Should we do the above also for Y
+
+    # do the above for Y now
+    for node in graph:
+        visited[node] = False
+
+    for y in Y:
+        q.put(y)
+    while not q.empty():
+        node = q.get()
+        visited[node] = True
+        if node in X:
+            print("This node is in X: " + str(node))
+            return False
+        if node not in Z: #is this the case?
+            #print(node)
+            #print(Z)
+            for descendant in graph[node]:
+                if not visited[descendant]:
+                    q.put(descendant)
+
     return True
 
 def is_independent(graph, X, Y, Z):
@@ -147,9 +168,9 @@ def is_independent(graph, X, Y, Z):
                 if (x in v_struct) and (y in v_struct):
                     return False
     #Phase 2
-    print(X)
-    print(Y)
-    print(Z)
+    #print(X)
+    #print(Y)
+    #print(Z)
     ans = traverse_trails(graph, X, Y, Z, out)
 
     return ans
