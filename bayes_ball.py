@@ -86,7 +86,7 @@ def  mark_v_struct(graph, Z):
         A.append(a)
     return A
 
-def traverse_trails(graph, X, Y, Z, out):
+def traverse_trails(graph, X, Y, Z):
     """Helper function that traverse all the trails
     in the graph looking for a blocked node.
     Implemented as BFS algorithm
@@ -105,42 +105,56 @@ def traverse_trails(graph, X, Y, Z, out):
 
     q = queue.Queue()
     visited = {}
+    markedOnTop = {}
+    markedOnBotton = {}
+    from_child = 0
+    from_parent = 1
+
     for node in graph:
         visited[node] = False
+        markedOnBotton[node] = False
+        markedOnTop[node] = False
 
     for x in X:
-        q.put(x)
-    while not q.empty():
-        node = q.get()
-        visited[node] = True
-        if node in Y:
-            print("This node is in Y: " + str(node))
-            return False
-        if node not in Z: #is this the case?
-            #print(node)
-            #print(Z)
-            for descendant in graph[node]:
-                if not visited[descendant]:
-                    q.put(descendant)
+        q.put((x,from_child))
 
-    # do the above for Y now
-    for node in graph:
-        visited[node] = False
+    while not q.empty():
+        item = q.get()
+
+        #print(item)
+
+        node = item[0]
+        from_const = item[1]
+        visited[node] = True
+
+        #if visit is from child
+        if from_const == from_child:
+            #1. Confirm that j does not belong in K
+            if not markedOnTop[node]: #if the top of j is not marked
+                markedOnTop[node] = True
+                for parent in get_parents(graph, node):
+                    q.put((parent, from_child))
+            if not markedOnBotton[node]: #if the bottom of j is not marked
+                markedOnBotton[node] = False
+                for child in graph[node]:
+                    #print('Putting child', child)
+                    q.put((child, from_parent))
+        else:#if visit is from parent
+            #print(node, "visit is from parent")
+            if node in Z and not markedOnTop[node]:
+                #print(node, "in Z")
+                markedOnTop[node] = True
+                for parent in get_parents(graph, node):
+                    q.put((parent, from_child))
+            elif node not in Z and not markedOnBotton[node]:
+                #print(node, "not in Z")
+                markedOnBotton[node] = True
+                for child in graph[node]:
+                    q.put((child, from_parent))
 
     for y in Y:
-        q.put(y)
-    while not q.empty():
-        node = q.get()
-        visited[node] = True
-        if node in X:
-            print("This node is in X: " + str(node))
-            return False
-        if node not in Z: #is this the case?
-            #print(node)
-            #print(Z)
-            for descendant in graph[node]:
-                if not visited[descendant]:
-                    q.put(descendant)
+        if visited[y]:
+           return False
 
     return True
 
@@ -160,18 +174,18 @@ def is_independent(graph, X, Y, Z):
     """
     #Phase 1
 
-    out = mark_v_struct(graph, Z) # Should the v structure be done separately for every z in Z
-    #Need to check whether this is correct
-    for v_struct in out:
-        for y in Y:
-            for x in X:
-                if (x in v_struct) and (y in v_struct):
-                    return False
+    # out = mark_v_struct(graph, Z) # Should the v structure be done separately for every z in Z
+    # #Need to check whether this is correct
+    # for v_struct in out:
+    #     for y in Y:
+    #         for x in X:
+    #             if (x in v_struct) and (y in v_struct):
+    #                 return False
     #Phase 2
     #print(X)
     #print(Y)
     #print(Z)
-    ans = traverse_trails(graph, X, Y, Z, out)
+    ans = traverse_trails(graph, X, Y, Z)
 
     return ans
 

@@ -37,6 +37,7 @@ class TestBayesBall(unittest.TestCase):
                 print("Query " + str(i) + ": Is " + str(X) + " independent of " + str(Y) + " given " + str(Z) + "?")
                 actual_answer = is_independent(graph, X, Y, Z)
                 expected_answer = answers[j]
+                print("actual_answer", actual_answer, "expected_answer", expected_answer)
                 self.assertEqual(actual_answer, expected_answer)
                 j += 1
 
