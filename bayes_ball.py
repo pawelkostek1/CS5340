@@ -121,8 +121,6 @@ def traverse_trails(graph, X, Y, Z):
     while not q.empty():
         item = q.get()
 
-        #print(item)
-
         node = item[0]
         from_const = item[1]
         visited[node] = True
@@ -137,17 +135,13 @@ def traverse_trails(graph, X, Y, Z):
             if not markedOnBotton[node]: #if the bottom of j is not marked
                 markedOnBotton[node] = False
                 for child in graph[node]:
-                    #print('Putting child', child)
                     q.put((child, from_parent))
         else:#if visit is from parent
-            #print(node, "visit is from parent")
             if node in Z and not markedOnTop[node]:
-                #print(node, "in Z")
                 markedOnTop[node] = True
                 for parent in get_parents(graph, node):
                     q.put((parent, from_child))
             elif node not in Z and not markedOnBotton[node]:
-                #print(node, "not in Z")
                 markedOnBotton[node] = True
                 for child in graph[node]:
                     q.put((child, from_parent))
