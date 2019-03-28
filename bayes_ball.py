@@ -72,19 +72,18 @@ def  mark_v_struct(graph, Z):
     Returns:
         A (list): list of nodes that are in Z or have descendants in Z
     """
-    A = []
-    for z in Z:
-        l = [z]
-        a = []
-        while len(l):
-            C = l.pop()
-            if C not in A:
-                for parent in get_parents(graph, C):
-                    if parent not in Z:
-                        l.append(parent)
-                a.append(C)
-        A.append(a)
-    return A
+
+    v_str = []
+    l = Z.copy()
+    while len(l):
+        C = l.pop()
+        if C not in v_str:
+            for parent in get_parents(graph, C):
+                if parent not in Z:
+                    l.append(parent)
+            v_str.append(C)
+
+    return v_str
 
 def traverse_trails(graph, X, Y, Z, out):
     """Helper function that traverse all the trails
@@ -102,45 +101,39 @@ def traverse_trails(graph, X, Y, Z, out):
         ans (bool): boolean answer corresponding to either finding blockage? or not
 
     """
-
     q = queue.Queue()
     visited = {}
+    from_child = 0
+    from_parent = 1
+
     for node in graph:
         visited[node] = False
 
     for x in X:
-        q.put(x)
+        q.put((x, from_child))
+
     while not q.empty():
-        node = q.get()
+        temp = q.get()
+        node = temp[0]
+        from_where = temp[1]
         visited[node] = True
+
         if node in Y:
-            print("This node is in Y: " + str(node))
             return False
-        if node not in Z: #is this the case?
-            #print(node)
-            #print(Z)
-            for descendant in graph[node]:
-                if not visited[descendant]:
-                    q.put(descendant)
-
-    # do the above for Y now
-    for node in graph:
-        visited[node] = False
-
-    for y in Y:
-        q.put(y)
-    while not q.empty():
-        node = q.get()
-        visited[node] = True
-        if node in X:
-            print("This node is in X: " + str(node))
-            return False
-        if node not in Z: #is this the case?
-            #print(node)
-            #print(Z)
-            for descendant in graph[node]:
-                if not visited[descendant]:
-                    q.put(descendant)
+        if from_where == from_child:
+            for child in graph[node]:
+                if node not in Z and not visited[child]:
+                    q.put((child, from_parent))
+            for parent in get_parents(graph, node):
+                if node not in Z and not visited[parent]:
+                    q.put((parent, from_child))
+        else:
+            for child in graph[node]:
+                if node not in Z and not visited[child]:
+                    q.put((child, from_parent))
+            for parent in get_parents(graph, node):
+                if node in out and not visited[parent]:
+                    q.put((parent, from_child))
 
     return True
 
@@ -159,19 +152,10 @@ def is_independent(graph, X, Y, Z):
     of Y given Z, False otherwise.
     """
     #Phase 1
+    v_str = mark_v_struct(graph, Z)
 
-    out = mark_v_struct(graph, Z) # Should the v structure be done separately for every z in Z
-    #Need to check whether this is correct
-    for v_struct in out:
-        for y in Y:
-            for x in X:
-                if (x in v_struct) and (y in v_struct):
-                    return False
     #Phase 2
-    #print(X)
-    #print(Y)
-    #print(Z)
-    ans = traverse_trails(graph, X, Y, Z, out)
+    ans = traverse_trails(graph, X, Y, Z, v_str)
 
     return ans
 
