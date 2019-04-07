@@ -60,7 +60,25 @@ def get_parents(graph, node):
             parents.append(parent)
     return parents
 
-def  mark_v_struct(graph, Z):
+def get_inverted_graph(graph):
+    """Function that inverts the graph
+
+    :param graph:
+    :return:
+    """
+    inverted_graph = {}
+
+    for node in graph:
+        inverted_graph[node] = []
+
+    for node in graph:
+        for child in graph[node]:
+            if node not in inverted_graph[child]:
+                inverted_graph[child].append(node)
+
+    return inverted_graph
+
+def  mark_v_struct(graph, inverted_graph, Z):
     """Helper function that traverse the graph
     from leaves to the roots, marking all nodes
     that are in Z or have descendants in Z.
@@ -78,14 +96,14 @@ def  mark_v_struct(graph, Z):
     while len(l):
         C = l.pop()
         if C not in v_str:
-            for parent in get_parents(graph, C):
+            for parent in inverted_graph[C]:
                 if parent not in Z:
                     l.append(parent)
             v_str.append(C)
 
     return v_str
 
-def traverse_trails(graph, X, Y, Z, out):
+def traverse_trails(graph, inverted_graph, X, Y, Z, out):
     """Helper function that traverse all the trails
     in the graph looking for a blocked node.
     Implemented as BFS algorithm
@@ -124,14 +142,14 @@ def traverse_trails(graph, X, Y, Z, out):
             for child in graph[node]:
                 if node not in Z and not visited[child]:
                     q.put((child, from_parent))
-            for parent in get_parents(graph, node):
+            for parent in inverted_graph[node]:
                 if node not in Z and not visited[parent]:
                     q.put((parent, from_child))
         else:
             for child in graph[node]:
                 if node not in Z and not visited[child]:
                     q.put((child, from_parent))
-            for parent in get_parents(graph, node):
+            for parent in inverted_graph[node]:
                 if node in out and not visited[parent]:
                     q.put((parent, from_child))
 
@@ -151,11 +169,13 @@ def is_independent(graph, X, Y, Z):
         bool: True if X is conditionally independent
     of Y given Z, False otherwise.
     """
+    inverted_graph = get_inverted_graph(graph)
+
     #Phase 1
-    v_str = mark_v_struct(graph, Z)
+    v_str = mark_v_struct(graph, inverted_graph, Z)
 
     #Phase 2
-    ans = traverse_trails(graph, X, Y, Z, v_str)
+    ans = traverse_trails(graph, inverted_graph, X, Y, Z, v_str)
 
     return ans
 
