@@ -18,9 +18,9 @@ class TestBayesBall(unittest.TestCase):
 
     def test_is_independent(self):
 
-        graph_files = ["graph1.txt", "graph2.txt", "graph3.txt", "graph4.txt"]
-        query_files = ["queries1.txt", "queries2.txt", "queries3.txt", "queries4.txt"]
-        answer_files = ["answers1.txt", "answers2.txt", "answers3.txt", "answers4.txt"]
+        graph_files = ["graph1.txt", "graph2.txt", "graph3.txt", "graph4.txt", "graph5.txt", "graph6.txt"]
+        query_files = ["queries1.txt", "queries2.txt", "queries3.txt", "queries4.txt", "queries5.txt", "queries6.txt"]
+        answer_files = ["answers1.txt", "answers2.txt", "answers3.txt", "answers4.txt", "answers5.txt", "answers6.txt"]
 
         for i, graph_file in enumerate(graph_files):
             print()
