@@ -56,6 +56,14 @@ def learn_hebbian(imgs):
     # Helper functions are allowed
     #######################################################################
     #######################################################################
+    for img in imgs:
+        img_array = np.asarray(img).reshape(-1)
+        for i in range(img_size):
+            for j in range(img_size):
+                #TODO: Can optimise by finding weights above diagonal only
+                if i != j:
+                    weights[i][j] += (img_array[i]) * (img_array[j])
+
     return weights, bias
 
 
@@ -96,6 +104,57 @@ def plot_results(imgs, cimgs, rimgs, fname='result.png'):
     fig.tight_layout()
     plt.savefig(fname)
 
+def flatten_img(img):
+    return np.asarray(img).reshape(-1)
+
+def unflatten_img(flat_img):
+    return np.reshape(flat_img, (32, 32))
+
+def show_img(img):
+    w, h = 32, 32
+    data = np.zeros((h, w, 3), dtype=np.uint8)
+    #data[256, 256] = [255, 0, 0]
+    for i in range(32):
+        for j in range(32):
+            if img[i][j] == -1:
+                data[i][j] = [0, 0, 0]
+            else:
+                data[i][j] = [255,255,255]
+
+    img = Image.fromarray(data, 'RGB')
+    img.save('my.png')
+    img.show()
+
+def recover_img(cimg, W, b):
+    img_size = np.prod(cimg.shape)
+    rimg = np.zeros(img_size)
+
+    order = []
+    for i in range(img_size):
+        order.append(i)
+
+    noChange = True
+    iterations = 0
+    while noChange == True:
+        iterations += 1
+        noChange = True
+        np.random.shuffle(order)
+        for index in order:
+            sum = 0
+            for i in range(img_size):
+                if i != index:
+                    sum += W[i][index] * cimg[i] + b[i]
+            if sum >= 0:
+                if rimg[index] != 1:
+                    noChange = False
+                rimg[index] = 1
+            else:
+                if rimg[index] != -1:
+                    noChange = False
+                rimg[index] = -1
+
+    print('Iterations Taken:', iterations)
+    return rimg
 
 def recover(cimgs, W, b):
     img_size = np.prod(cimgs[0].shape)
@@ -107,6 +166,11 @@ def recover(cimgs, W, b):
     # Helper functions are allowed
     #######################################################################
     #######################################################################
+
+    for cimg in cimgs:
+        rimg = recover_img(cimg, W, b)
+        rimgs.append(unflatten_img(rimg))
+
     return rimgs
 
 
@@ -136,6 +200,14 @@ def main():
     rimgs_mpl = recover(cimgs, Wmpl, bmpl)
     np.save('mpl.npy', rimgs_mpl)
 
+    # TODO: Remove before submission
+    print("Length", len(rimgs_h))
+    cimg = unflatten_img(cimgs[0])
+    rimg = rimgs_h[0]
+    # for cimg in cimgs:
+    #     show_img(unflatten_img(cimg))
+    show_img(cimg)
+    show_img(rimg)
 
 if __name__ == '__main__':
     main()
