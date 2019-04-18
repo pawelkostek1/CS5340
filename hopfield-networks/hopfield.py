@@ -58,11 +58,14 @@ def learn_hebbian(imgs):
     #######################################################################
     for img in imgs:
         img_array = np.asarray(img).reshape(-1)
-        for i in range(img_size):
-            for j in range(img_size):
-                #TODO: Can optimise by finding weights above diagonal only
-                if i != j:
-                    weights[i][j] += (img_array[i]) * (img_array[j])
+        # for i in range(img_size):
+        #     for j in range(img_size):
+        #         #TODO: Can optimise by finding weights above diagonal only
+        #         if i != j:
+        #             weights[i][j] += (img_array[i]) * (img_array[j])
+        weights += np.dot(img_array.reshape((img_size,1)), img_array.reshape((1,img_size)))
+
+        np.fill_diagonal(weights,0)
 
     return weights, bias
 
@@ -127,32 +130,37 @@ def show_img(img):
 
 def recover_img(cimg, W, b):
     img_size = np.prod(cimg.shape)
-    rimg = np.zeros(img_size)
+    img = np.copy(cimg)
 
     order = []
     for i in range(img_size):
         order.append(i)
 
-    noChange = True
     iterations = 0
-    while noChange == True:
-        iterations += 1
+    while True:
+        # in every iteration, initialise noChange to True
         noChange = True
+        iterations += 1
         np.random.shuffle(order)
         for index in order:
             sum = 0
             for i in range(img_size):
                 if i != index:
-                    sum += W[i][index] * cimg[i] + b[i]
+                    sum += W[i][index] * img[i] + b[i]
             if sum >= 0:
-                if rimg[index] != 1:
+                if img[index] != 1:
                     noChange = False
-                rimg[index] = 1
+                    img[index] = 1
             else:
-                if rimg[index] != -1:
+                if img[index] != -1:
                     noChange = False
-                rimg[index] = -1
+                    img[index] = -1
 
+        # Check if nothing changed
+        if noChange == True:
+            break
+
+    rimg = img
     print('Iterations Taken:', iterations)
     return rimg
 
